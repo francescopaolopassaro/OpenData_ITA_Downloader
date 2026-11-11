@@ -2,6 +2,50 @@
 
 Libreria **C# / .NET 10** e **CLI** per scaricare dati open data italiani da portali **CKAN** e atti legali dall'API **Normattiva**.
 
+## 📦 Installazione (NuGet)
+
+```bash
+dotnet add package OpenDataDownloader
+```
+
+Il pacchetto è pubblicato su [NuGet.org](https://www.nuget.org/packages/OpenDataDownloader) con licenza MIT.
+
+### Esempio di uso come libreria
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using OpenDataDownloader.Contracts;
+using OpenDataDownloader.Core;
+
+var services = new ServiceCollection();
+services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Warning));
+
+services.AddCompleteOpenDataWorkflow(
+    new List<CkanPortal>
+    {
+        new() { Name = "DatiGovIt", BaseApiUrl = "https://www.dati.gov.it/opendata/api/3/action/" },
+        new() { Name = "BDAP_MEF", BaseApiUrl = "https://bdap-opendata.rgs.mef.gov.it/SpodCkanApi/api/3/action/" },
+        new() { Name = "OpenGA", BaseApiUrl = "https://openga.giustizia-amministrativa.it/api/3/action/" },
+        new() { Name = "ANAC", BaseApiUrl = "https://dati.anticorruzione.it/opendata/api/3/action/" }
+    },
+    downloadRoot: "./downloads",
+    configureNormattiva: cfg =>
+    {
+        cfg.DefaultFormat = "AKN";
+        cfg.DefaultExport = "O";
+    },
+    maxConcurrency: 4);
+
+await using var sp = services.BuildServiceProvider();
+var orchestrator = sp.GetRequiredService<OrchestrationServiceFactory>().Create();
+
+var summary = await orchestrator.DownloadAllAsync(portals, CancellationToken.None);
+
+Console.WriteLine($"{summary.TotalSuccessfulDownloads} file scaricati in {summary.TotalDuration:mm\\:ss}");
+```
+
+Un progetto di esempio completo è disponibile in `src/OpenDataDownloader.Sample/`.
+
 ## 🚀 CLI — uso rapido
 
 ```bash

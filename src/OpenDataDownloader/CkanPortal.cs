@@ -15,7 +15,7 @@ public class CkanPortal
     /// </summary>
     public const string DefaultUserAgent =
         "Mozilla/5.0 (compatible; OpenDataDownloader/1.0; " +
-        "+https://github.com/fpassaro/OpenData_ITA_Downloader) " +
+        "+https://github.com/francescopaolopassaro/OpenData_ITA_Downloader) " +
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36";
 
     /// <summary>
