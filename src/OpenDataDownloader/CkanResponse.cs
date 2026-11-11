@@ -1,4 +1,4 @@
-namespace OpenDataDownloader;
+namespace OpenDataDownloader.Contracts;
 
 /// <summary>
 /// Represents a generic response from a CKAN API action.

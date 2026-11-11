@@ -8,7 +8,7 @@ public interface IDataProvider
     /// <summary>
     /// Gets the name of this data provider.
     /// </summary>
-    string Name { get; }
+    string Name { get; set; }
 
     /// <summary>
     /// Lists all package identifiers available from the data source.
@@ -20,4 +20,12 @@ public interface IDataProvider
     /// Returns null when the dataset is not found.
     /// </summary>
     Task<CkanPackage?> GetPackageDetailsAsync(string packageId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Searches packages using the CKAN search_list endpoint with the specified options.
+    /// Returns lightweight package summaries suitable for filtering before loading full details.
+    /// </summary>
+    Task<List<PackageSearchResult>> SearchPackagesAsync(
+        CkanSearchOptions options,
+        CancellationToken cancellationToken = default);
 }
