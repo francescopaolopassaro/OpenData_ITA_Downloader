@@ -251,7 +251,7 @@ services.AddCkanPortal(new CkanPortal
 - `FileStorageService` accetta `maxConcurrency` (default 4, range 1–32).
 - Tutte le chiamate HTTP usano **Polly 8.x**: retry con back-off esponenziale + timeout globale.
 - I nomi file vengono sanificati: caratteri invalidi sostituiti con `_`.
-- I portali che bloccano le richieste (es. ANAC con WAF `Request Rejected`) vengono segnalati come errore senza interrompere gli altri portali.
+- Alcuni portali (es. ANAC) richiedono un User-Agent browser-like per superare il WAF: la libreria lo invia di default e può essere personalizzato per portale tramite `CkanPortal.UserAgent`.
 
 ## 🧪 Testing
 

@@ -40,10 +40,18 @@ public class CkanDataProvider : IDataProvider, IDisposable
         _apiKey = apiKey;
         _logger = logger;
 
-        // Some portals (e.g. OpenGA) reject requests without a User-Agent.
-        if (!_httpClient.DefaultRequestHeaders.UserAgent.Any())
+        // Some portals (e.g. OpenGA) reject requests without a User-Agent, and some WAFs
+        // (e.g. ANAC) require a browser-like UA plus an Accept header.
+        if (!_httpClient.DefaultRequestHeaders.Contains("User-Agent"))
         {
-            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("OpenDataDownloader/1.0");
+            _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                "User-Agent", CkanPortal.DefaultUserAgent);
+        }
+
+        if (!_httpClient.DefaultRequestHeaders.Contains("Accept"))
+        {
+            _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                "Accept", "application/json");
         }
 
         // Add API key header if provided

@@ -28,6 +28,7 @@ public static class OpenDataDownloaderServiceCollectionExtensions
         {
             client.Timeout = TimeSpan.FromSeconds(60);
             configureHttpClient?.Invoke(client);
+            ApplyDefaultHeaders(client, userAgent: null, accept: "*/*");
         });
 
         // Register FileStorageService
@@ -73,11 +74,12 @@ public static class OpenDataDownloaderServiceCollectionExtensions
             client.Timeout = TimeSpan.FromSeconds(60);
             configureHttpClient?.Invoke(client);
 
-            // Some portals (e.g. OpenGA) reject requests without a User-Agent.
-            if (!client.DefaultRequestHeaders.UserAgent.Any())
-            {
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("OpenDataDownloader/1.0");
-            }
+            // Some portals (e.g. OpenGA) reject requests without a User-Agent, and some
+            // WAFs (e.g. ANAC) additionally require a browser-like UA plus an Accept header.
+            ApplyDefaultHeaders(
+                client,
+                portal.UserAgent ?? CkanPortal.DefaultUserAgent,
+                accept: "application/json");
         });
 
         // Register the provider as a keyed service — handles API key internally
@@ -124,13 +126,33 @@ public static class OpenDataDownloaderServiceCollectionExtensions
                 : normattivaConfig.BaseApiUrl + "/");
             client.Timeout = TimeSpan.FromMinutes(65); // Normattiva polling can take long
 
-            if (!client.DefaultRequestHeaders.UserAgent.Any())
-            {
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("OpenDataDownloader/1.0");
-            }
+            ApplyDefaultHeaders(
+                client,
+                CkanPortal.DefaultUserAgent,
+                accept: "application/json");
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// Adds the default User-Agent and Accept headers to a client when they are not already set.
+    /// A browser-like User-Agent is required by some WAFs (e.g. ANAC), and the Accept header
+    /// is also part of the request signature those WAFs check.
+    /// </summary>
+    private static void ApplyDefaultHeaders(HttpClient client, string? userAgent, string accept)
+    {
+        if (!client.DefaultRequestHeaders.Contains("User-Agent"))
+        {
+            client.DefaultRequestHeaders.TryAddWithoutValidation(
+                "User-Agent",
+                string.IsNullOrWhiteSpace(userAgent) ? CkanPortal.DefaultUserAgent : userAgent);
+        }
+
+        if (!client.DefaultRequestHeaders.Contains("Accept"))
+        {
+            client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", accept);
+        }
     }
 
     /// <summary>

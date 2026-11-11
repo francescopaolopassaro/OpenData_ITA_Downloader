@@ -467,13 +467,7 @@ internal static class Program
         services.AddCompleteOpenDataWorkflow(
             portals,
             options.OutputDirectory,
-            client =>
-            {
-                if (!client.DefaultRequestHeaders.UserAgent.Any())
-                {
-                    client.DefaultRequestHeaders.UserAgent.ParseAdd("OpenDataDownloader/1.0");
-                }
-            },
+            configureHttpClient: null,
             normattiva == null ? null : config => ApplyNormattivaOptions(config, options),
             options.MaxConcurrency);
 
@@ -598,8 +592,8 @@ internal static class Program
               - Ogni file viene scritto come .part e rinominato solo a download completo.
               - Al termine vengono creati manifest.json / manifest.csv (CKAN) e
                 normattiva-manifest.json / .csv (Normattiva).
-              - ANAC può bloccare le richieste con un WAF ("Request Rejected"); in quel caso
-                il portale viene segnalato come errore e gli altri proseguono.
+              - Alcuni portali richiedono un User-Agent browser-like (es. ANAC): la libreria lo invia
+                di default; puoi personalizzarlo per portale con `CkanPortal.UserAgent` o l'API `--api-key`.
             """);
     }
 
